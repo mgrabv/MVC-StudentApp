@@ -1,0 +1,116 @@
+﻿@page "/"
+@inject IStudentsService studentsService
+@inject IJSRuntime js
+@inject NavigationManager navigationManager
+
+<h3 style="text-decoration:underline">Students</h3>
+
+@if (students == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <td style="padding:40px 0 10px 0"><span style="font-style: oblique; font-weight: bold">sort: </span>@SortInfo</td>
+    <table border="1" style="border:3px; border-color:black" cellpadding="10">
+        <tr align="center">
+            <th width="200">Avatar</th>
+            <th width="200" @onclick='() => Sort("FIRSTNAME")' style="cursor:pointer">First name</th>
+            <th width="200" @onclick='() => Sort("LASTNAME")' style="cursor:pointer">Last name</th>
+            <th width="200" @onclick='() => Sort("BIRTHDATE")' style="cursor:pointer">Birthdate</th>
+            <th width="200" @onclick='() => Sort("STUDIES")' style="cursor:pointer">Studies</th>
+        </tr>
+        @foreach (Student s in students)
+        {
+            <tr align="center">
+                <td @onclick='() => PassStudentInfo(s)' style="cursor:pointer"><img src="@s.Avatar" width="60" height="60" style="border-radius:100%" /></td>
+                <td @onclick='() => PassStudentInfo(s)' style="cursor:pointer">@s.FirstName</td>
+                <td @onclick='() => PassStudentInfo(s)' style="cursor:pointer">@s.LastName</td>
+                <td @onclick='() => PassStudentInfo(s)' style="cursor:pointer">@s.Birthdate.ToShortDateString()</td>
+                <td @onclick='() => PassStudentInfo(s)' style="cursor:pointer">@s.Studies</td>
+                <td style="border-top:hidden; border-bottom:hidden; border-right:hidden">
+                    <input type="image" src="https://cdn.iconscout.com/icon/free/png-256/exit-1852366-1573369.png" width="25" height="25" align="center" @onclick='() => DeleteStudent(s)' />
+                </td>
+            </tr>
+        }
+    </table>
+}
+
+@code {
+    private List<Student> students;
+    private bool SortAscending = true;
+    private string SortInfo = "original order";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Delay(1000);
+        students = studentsService.GetStudents().ToList();
+    }
+
+    private async Task DeleteStudent(Student student)
+    {
+        var Confirmed = await js.InvokeAsync<bool>("confirm", "Are you sure you want to delete student " + student.FirstName + " " + student.LastName + "?");
+
+        if (Confirmed)
+        {
+            studentsService.DeleteStudent(student);
+            students.Remove(student);
+        }
+    }
+
+    private void Sort(string parameter)
+    {
+        if (SortAscending)
+        {
+            SortAscending = false;
+            switch (parameter)
+            {
+                case "FIRSTNAME":
+                    SortInfo = "first name ascending";
+                    students = students.OrderBy(s => s.FirstName).ToList();
+                    break;
+                case "LASTNAME":
+                    SortInfo = "last name ascending";
+                    students = students.OrderBy(s => s.LastName).ToList();
+                    break;
+                case "BIRTHDATE":
+                    SortInfo = "birthdate ascending";
+                    students = students.OrderBy(s => s.Birthdate).ToList();
+                    break;
+                case "STUDIES":
+                    SortInfo = "studies ascending";
+                    students = students.OrderBy(s => s.Studies).ToList();
+                    break;
+            }
+        }
+        else
+        {
+            SortAscending = true;
+            switch (parameter)
+            {
+                case "FIRSTNAME":
+                    SortInfo = "first name descending";
+                    students = students.OrderByDescending(s => s.FirstName).ToList();
+                    break;
+                case "LASTNAME":
+                    SortInfo = "last name descending";
+                    students = students.OrderByDescending(s => s.LastName).ToList();
+                    break;
+                case "BIRTHDATE":
+                    SortInfo = "birthdate descending";
+                    students = students.OrderByDescending(s => s.Birthdate).ToList();
+                    break;
+                case "STUDIES":
+                    SortInfo = "studies descending";
+                    students = students.OrderByDescending(s => s.Studies).ToList();
+                    break;
+            }
+        }
+    }
+
+    private void PassStudentInfo(Student student)
+    {
+        studentsService.SetStudentInfo(student);
+        navigationManager.NavigateTo("/details");
+    }
+}

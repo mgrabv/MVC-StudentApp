@@ -1,0 +1,73 @@
+﻿@page "/details"
+@inject IStudentsService studentsService
+@inject NavigationManager navigationManager
+
+<h3 style="text-decoration:underline">Student's Details</h3>
+
+@if (StudentInfo == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table cellspacing="5" cellpadding="10">
+        <tr>
+            <td align="right">
+                First name:
+            </td>
+            <td>
+                <input type="text" value="@StudentInfo.FirstName" style="text-align:center" readonly />
+            </td>
+            <td style="padding-left:100px">
+                Avatar:
+            </td>
+            <td>
+                <input type="image" src='@StudentInfo.Avatar' width="150" height="150" border="3" align="center">
+            </td>
+        </tr>
+        <tr>
+            <td align="right">
+                Last name:
+            </td>
+            <td>
+                <input type="text" value="@StudentInfo.LastName" style="text-align:center" readonly />
+            </td>
+        </tr>
+        <tr>
+            <td align="right">
+                Birthdate:
+            </td>
+            <td>
+                <input type="text" value="@StudentInfo.Birthdate.ToShortDateString()" style="text-align:center" readonly />
+            </td>
+        </tr>
+        <tr>
+            <td align="right">
+                Studies:
+            </td>
+            <td>
+                <input type="text" value="@StudentInfo.Studies" style="text-align:center" readonly />
+            </td>
+        </tr>
+    </table>
+    <tr>
+        <td style="padding-top:100px; padding-left:35px">
+            <button style="background:#0026ff; color:azure; height:40px; width:100px" @onclick="NavigateToStudentList">Return</button>
+        </td>
+    </tr>
+}
+
+@code {
+    Student StudentInfo;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Delay(1000);
+        StudentInfo = studentsService.GetStudentInfo();
+    }
+
+    private void NavigateToStudentList()
+    {
+        navigationManager.NavigateTo("/");
+    }
+}
